@@ -6,6 +6,15 @@ SQL-based analytics project built on real infrastructure data from a lab environ
 
 This project analyzes homelab infrastructure data to identify service uptime patterns, incident trends, VLAN traffic distribution, resource utilization, and capacity risks. The goal is to transform raw operational metrics into actionable insights — the same workflow used in enterprise BI reporting.
 
+## Key Insights
+
+- Trusted VLAN generates the majority of network traffic (3.01 GB over 7 days), indicating primary workload concentration on personal devices
+- All critical services maintain 100% uptime across 168 hourly checks, validating monitoring reliability and infrastructure stability
+- Minecraft server consumes 7.4 GB average memory (46% of total VM RAM), flagging it as the primary candidate for capacity planning
+- Most critical incidents are infrastructure-related (subnet conflicts, disk exhaustion) rather than application-level, suggesting foundational architecture improvements have the highest ROI
+- Average resolution time increases with severity: critical incidents average 55 minutes vs 18 minutes for minor issues, indicating a need for runbook automation on high-severity scenarios
+- Configuration changes (syslog format, SNMP config, compose operations) are the most common source of service disruption, supporting a case for change management procedures
+
 ## BI Analyst Skills Demonstrated
 
 | Skill | How It's Applied |
@@ -15,27 +24,45 @@ This project analyzes homelab infrastructure data to identify service uptime pat
 | Data Validation | Cross-referencing metrics against baselines, threshold-based health checks |
 | Trend Analysis | Time-series patterns, week-over-week growth, peak usage identification |
 | Dashboard-Ready Reporting | Queries structured to feed BI dashboards (summary tables, aggregations, ranked outputs) |
+| Data Storytelling | Translating query outputs into actionable insights for non-technical stakeholders |
 | Technical Documentation | Schema diagrams, query descriptions, sample outputs, metric definitions |
 
-## Screenshots
+## Dashboard & Visualization Examples
 
-### SQL Query Outputs
+### KPI Query Output
+![KPI Output](screenshots/sql-kpi-dashboard.png)
 
-| Screenshot | Description |
-|-----------|-------------|
-| ![KPI Dashboard](screenshots/sql-kpi-dashboard.png) | KPI dashboard query output — service uptime, resource usage, memory allocation, VLAN traffic |
-| ![Incident Report](screenshots/sql-incident-report.png) | Incident timeline with severity, resolution time, and root cause analysis |
+SQL queries calculating service uptime percentages, resource utilization by service, memory allocation by category, and per-VLAN traffic volume.
 
-### Monitoring Dashboards (Data Source)
+### Incident Analysis
+![Incidents](screenshots/sql-incident-report.png)
 
-These dashboards visualize the same infrastructure metrics that the SQL queries analyze.
+Incident timeline query joining services and incidents tables to calculate downtime duration and summarize root causes by severity.
 
-| Screenshot | Description |
-|-----------|-------------|
-| ![Node Exporter](screenshots/grafana-node-exporter.png) | Grafana Node Exporter — CPU, RAM, disk, and network utilization |
-| ![OPNsense Traffic](screenshots/grafana-opnsense-traffic.png) | Grafana OPNsense — per-VLAN traffic with SNMP-relabeled interface names |
-| ![Docker Logs](screenshots/grafana-docker-logs.png) | Grafana Docker Logs — container log streams and volume by container |
-| ![Uptime Kuma](screenshots/uptime-kuma-status.png) | Uptime Kuma — service availability with uptime percentages |
+Key observations:
+- Most critical incidents are infrastructure-related (subnet conflicts, disk exhaustion)
+- Average resolution time increases with severity level
+- Configuration changes are a common source of service disruption
+
+### Service Uptime Monitoring
+![Uptime](screenshots/uptime-kuma-status.png)
+
+Real-time service availability tracking with uptime percentages across all monitored endpoints. Validates the 100% uptime KPI shown in SQL query outputs.
+
+### Network Traffic Analysis
+![Traffic](screenshots/grafana-opnsense-traffic.png)
+
+VLAN-level ingress and egress trends collected via SNMP from OPNsense, with interface names relabeled from raw IDs to human-readable VLAN names. Used to identify traffic concentration and usage patterns.
+
+### System Performance Metrics
+![System Metrics](screenshots/grafana-node-exporter.png)
+
+CPU, memory, disk, and network utilization dashboards for capacity planning and resource trend analysis. Data source for the resource usage KPI queries.
+
+### Log Analysis
+![Logs](screenshots/grafana-docker-logs.png)
+
+Centralized log aggregation from all Docker containers via Loki and Grafana Alloy. Log volume by container chart enables anomaly detection and targeted troubleshooting.
 
 ## Sample Query Outputs
 
