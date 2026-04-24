@@ -1,5 +1,5 @@
 -- =============================================================================
--- Homelab Infrastructure Analytics — Seed Data
+-- Homelab Infrastructure Analytics - Seed Data
 -- Realistic data based on actual homelab infrastructure
 -- =============================================================================
 
@@ -29,11 +29,8 @@ INSERT INTO vlans (id, vlan_id, name, subnet, gateway, purpose, firewall_policy)
 (4, 30, 'IoT',         '10.0.30.0/24',   '10.0.30.1', 'Smart devices',        'internet_only'),
 (5, 40, 'Guest',       '10.0.40.0/24',   '10.0.40.1', 'Visitors',             'internet_only');
 
--- Service Metrics — 7 days of hourly data for key services
+-- Service Metrics - 7 days of hourly data for key services
 -- Generating realistic patterns: lower usage at night, spikes during day
-
--- Helper: Generate 168 hours (7 days) of metrics for each service
--- Day 1-7, Hours 0-23
 
 -- Prometheus metrics (steady, low resource usage)
 INSERT INTO service_metrics (service_id, timestamp, cpu_percent, memory_mb, status, response_time_ms)
@@ -82,8 +79,8 @@ SELECT 8,
 FROM (SELECT 0 AS d UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6) days,
      (SELECT 0 AS h UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23) hours;
 
--- Network Traffic — hourly per VLAN
--- Trusted (VLAN 10) — highest traffic, personal devices
+-- Network Traffic - hourly per VLAN
+-- Trusted (VLAN 10) - highest traffic, personal devices
 INSERT INTO network_traffic (vlan_id, timestamp, bytes_in, bytes_out, packets_in, packets_out)
 SELECT 10,
     datetime('2026-04-17', '+' || (d*24 + h) || ' hours'),
@@ -98,7 +95,7 @@ SELECT 10,
 FROM (SELECT 0 AS d UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6) days,
      (SELECT 0 AS h UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23) hours;
 
--- Lab (VLAN 20) — moderate, Docker + monitoring traffic
+-- Lab (VLAN 20) - moderate, Docker + monitoring traffic
 INSERT INTO network_traffic (vlan_id, timestamp, bytes_in, bytes_out, packets_in, packets_out)
 SELECT 20,
     datetime('2026-04-17', '+' || (d*24 + h) || ' hours'),
@@ -109,7 +106,7 @@ SELECT 20,
 FROM (SELECT 0 AS d UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6) days,
      (SELECT 0 AS h UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23) hours;
 
--- IoT (VLAN 30) — low, isolated traffic
+-- IoT (VLAN 30) - low, isolated traffic
 INSERT INTO network_traffic (vlan_id, timestamp, bytes_in, bytes_out, packets_in, packets_out)
 SELECT 30,
     datetime('2026-04-17', '+' || (d*24 + h) || ' hours'),
@@ -120,38 +117,44 @@ SELECT 30,
 FROM (SELECT 0 AS d UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6) days,
      (SELECT 0 AS h UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23) hours;
 
--- Incidents — realistic incidents from actual homelab experience
+-- Incidents - realistic incidents from actual homelab experience
 INSERT INTO incidents (id, service_id, started_at, resolved_at, severity, root_cause, resolution, impact) VALUES
 (1, NULL, '2026-04-01 14:30:00', '2026-04-01 15:45:00', 'critical',
-    'Root filesystem hit 100% — Ubuntu installer only allocated 15GB of 32GB disk',
+    'Root filesystem hit 100% - Ubuntu installer only allocated 15GB of 32GB disk',
     'Freed space with docker system prune, expanded LV with lvextend + resize2fs to 30GB',
-    'All Docker containers unable to write logs or data'),
+    'All Docker containers unable to write logs or data');
+INSERT INTO incidents (id, service_id, started_at, resolved_at, severity, root_cause, resolution, impact) VALUES
 (2, 6, '2026-04-05 09:15:00', '2026-04-05 10:30:00', 'major',
     'SNMP Exporter returning only scrape-health metrics, no interface data',
     'Replaced hand-written 14-line config with full 61K-line official default config from container image',
-    'No OPNsense network interface metrics in Grafana'),
+    'No OPNsense network interface metrics in Grafana');
+INSERT INTO incidents (id, service_id, started_at, resolved_at, severity, root_cause, resolution, impact) VALUES
 (3, 4, '2026-04-08 16:00:00', '2026-04-08 16:45:00', 'major',
-    'Alloy receiving OPNsense syslog but discarding all entries — RFC5424 vs RFC3164 format mismatch',
+    'Alloy receiving OPNsense syslog but discarding all entries - RFC5424 vs RFC3164 format mismatch',
     'Added syslog_format = rfc3164 to Alloy config',
-    'No firewall logs visible in Loki/Grafana'),
+    'No firewall logs visible in Loki/Grafana');
+INSERT INTO incidents (id, service_id, started_at, resolved_at, severity, root_cause, resolution, impact) VALUES
 (4, NULL, '2026-04-10 11:00:00', '2026-04-10 12:00:00', 'critical',
-    'Subnet conflict — vmbr0 and vmbr1 both on 192.168.0.0/24 causing routing failures',
+    'Subnet conflict - vmbr0 and vmbr1 both on 192.168.0.0/24 causing routing failures',
     'Redesigned network into two subnets: WAN on 192.168.0.0/24, LAN on 10.0.x.0/24',
-    'All inter-VLAN routing broken, VMs unreachable'),
+    'All inter-VLAN routing broken, VMs unreachable');
+INSERT INTO incidents (id, service_id, started_at, resolved_at, severity, root_cause, resolution, impact) VALUES
 (5, 8, '2026-04-12 08:30:00', '2026-04-12 09:00:00', 'minor',
-    'Pi-hole failed to build gravity database — Docker DNS couldnt reach internet during startup',
+    'Pi-hole failed to build gravity database - Docker DNS could not reach internet during startup',
     'Added explicit bootstrap DNS servers (1.1.1.1, 8.8.8.8) via dns: directive in compose',
-    'Ad blocking not functional until gravity database built'),
+    'Ad blocking not functional until gravity database built');
+INSERT INTO incidents (id, service_id, started_at, resolved_at, severity, root_cause, resolution, impact) VALUES
 (6, 10, '2026-04-15 20:00:00', '2026-04-15 20:30:00', 'critical',
     'Running docker compose down on services stack killed cloudflared, breaking Cloudflare Tunnel',
     'Accessed server via Proxmox console, ran docker compose up -d to restore all services',
-    'Public website and remote access down for 30 minutes'),
+    'Public website and remote access down for 30 minutes');
+INSERT INTO incidents (id, service_id, started_at, resolved_at, severity, root_cause, resolution, impact) VALUES
 (7, 13, '2026-04-23 12:10:00', '2026-04-23 12:16:00', 'minor',
-    'Minecraft server showed Can\'t keep up warning after startup — post-spawn-generation catch-up',
-    'No action needed — normal behavior for modded servers after initial chunk generation',
-    'No player impact — warning is cosmetic');
+    'Minecraft server showed post-startup chunk catch-up warning',
+    'No action needed - normal behavior for modded servers after initial chunk generation',
+    'No player impact - warning is cosmetic');
 
--- Disk Metrics — daily snapshots for 7 days
+-- Disk Metrics - daily snapshots for 7 days
 INSERT INTO disk_metrics (mount_point, disk_type, total_gb, used_gb, timestamp)
 SELECT '/', 'nvme', 30.0,
     ROUND(14.5 + d * 0.1 + ABS(RANDOM() % 5) / 10.0, 1),
