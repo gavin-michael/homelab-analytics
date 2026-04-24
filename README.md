@@ -17,6 +17,26 @@ This project analyzes homelab infrastructure data to identify service uptime pat
 | Dashboard-Ready Reporting | Queries structured to feed BI dashboards (summary tables, aggregations, ranked outputs) |
 | Technical Documentation | Schema diagrams, query descriptions, sample outputs, metric definitions |
 
+## Screenshots
+
+### SQL Query Outputs
+
+| Screenshot | Description |
+|-----------|-------------|
+| ![KPI Dashboard](screenshots/sql-kpi-dashboard.png) | KPI dashboard query output — service uptime, resource usage, memory allocation, VLAN traffic |
+| ![Incident Report](screenshots/sql-incident-report.png) | Incident timeline with severity, resolution time, and root cause analysis |
+
+### Monitoring Dashboards (Data Source)
+
+These dashboards visualize the same infrastructure metrics that the SQL queries analyze.
+
+| Screenshot | Description |
+|-----------|-------------|
+| ![Node Exporter](screenshots/grafana-node-exporter.png) | Grafana Node Exporter — CPU, RAM, disk, and network utilization |
+| ![OPNsense Traffic](screenshots/grafana-opnsense-traffic.png) | Grafana OPNsense — per-VLAN traffic with SNMP-relabeled interface names |
+| ![Docker Logs](screenshots/grafana-docker-logs.png) | Grafana Docker Logs — container log streams and volume by container |
+| ![Uptime Kuma](screenshots/uptime-kuma-status.png) | Uptime Kuma — service availability with uptime percentages |
+
 ## Sample Query Outputs
 
 ### Service Uptime (7 Days)
@@ -56,7 +76,7 @@ This project analyzes homelab infrastructure data to identify service uptime pat
 ```
 | id | service        | severity | min | root_cause                                          |
 |----|----------------|----------|-----|-----------------------------------------------------|
-| 7  | minecraft      | minor    | 6   | Minecraft Can't keep up warning post-startup        |
+| 7  | minecraft      | minor    | 6   | Minecraft post-startup chunk catch-up warning       |
 | 6  | cloudflared    | critical | 30  | docker compose down killed cloudflared tunnel       |
 | 5  | pihole         | minor    | 30  | Pi-hole gravity DB failed - Docker DNS unreachable  |
 | 4  | Infrastructure | critical | 60  | Subnet conflict - both bridges on same subnet       |
@@ -77,28 +97,20 @@ This project analyzes homelab infrastructure data to identify service uptime pat
 ## Schema
 
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│    services      │     │  service_metrics  │     │    incidents     │
-├─────────────────┤     ├──────────────────┤     ├─────────────────┤
-│ id              │◄────│ service_id       │     │ id              │
-│ name            │     │ timestamp        │     │ service_id      │
-│ category        │     │ cpu_percent      │     │ started_at      │
-│ port            │     │ memory_mb        │     │ resolved_at     │
-│ vlan            │     │ status           │     │ severity        │
-│ host            │     │ response_time_ms │     │ root_cause      │
-│ created_at      │     └──────────────────┘     │ resolution      │
-└─────────────────┘                              └─────────────────┘
+services              service_metrics        incidents
+  id (PK)               service_id (FK)        id (PK)
+  name                  timestamp              service_id (FK)
+  category              cpu_percent            started_at
+  port                  memory_mb              resolved_at
+  vlan                  status                 severity
+  host                  response_time_ms       root_cause / resolution
 
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│     vlans        │     │ network_traffic  │     │  disk_metrics    │
-├─────────────────┤     ├──────────────────┤     ├─────────────────┤
-│ vlan_id         │     │ vlan_id          │     │ mount_point     │
-│ name            │     │ timestamp        │     │ disk_type       │
-│ subnet          │     │ bytes_in         │     │ total_gb        │
-│ gateway         │     │ bytes_out        │     │ used_gb         │
-│ purpose         │     │ packets_in       │     │ timestamp       │
-│ firewall_policy │     │ packets_out      │     └─────────────────┘
-└─────────────────┘     └──────────────────┘
+vlans                 network_traffic        disk_metrics
+  vlan_id (PK)          vlan_id (FK)           mount_point
+  name                  timestamp              disk_type
+  subnet                bytes_in/out           total_gb / used_gb
+  gateway               packets_in/out         timestamp
+  firewall_policy
 ```
 
 ## Files
